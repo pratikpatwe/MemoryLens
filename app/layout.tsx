@@ -4,9 +4,7 @@ import "./globals.css"
 import { SonnerProvider } from "@/components/sonner-provider"
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.dev",
+  title: "MemoryLens",
 }
 
 export default function RootLayout({
