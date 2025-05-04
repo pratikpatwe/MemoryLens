@@ -43,7 +43,7 @@ export default function Home() {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Our Mission</h2>
-            <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
+            <div className="w-20 h-1 bg-slate-600 mx-auto mb-6"></div>
           </div>
           <div className="bg-white rounded-2xl p-8 md:p-12 shadow-lg border border-slate-100">
             <div className="flex flex-col md:flex-row items-center gap-8">
@@ -77,7 +77,7 @@ export default function Home() {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Our Project</h2>
-            <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
+            <div className="w-20 h-1 bg-slate-600 mx-auto mb-6"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6 order-2 md:order-1">
@@ -142,7 +142,7 @@ export default function Home() {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Our Team</h2>
-            <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
+            <div className="w-20 h-1 bg-slate-600 mx-auto mb-6"></div>
           </div>
 
           {/* Team Group Image - 16:9 ratio */}
@@ -190,7 +190,7 @@ export default function Home() {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Our Mentor</h2>
-            <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
+            <div className="w-20 h-1 bg-slate-600 mx-auto mb-6"></div>
             <p className="text-slate-700 max-w-2xl mx-auto mb-8">
               Our project is guided by an exceptional mentor who brings expertise and vision to MemoryLens.
             </p>
