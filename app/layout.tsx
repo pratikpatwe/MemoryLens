@@ -8,6 +8,11 @@ import {
 
 export const metadata: Metadata = {
   title: "MemoryLens",
+  description: "A smart memory device",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/favicon.ico",
+  }
 }
 
 export default function RootLayout({
