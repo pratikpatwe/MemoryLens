@@ -9,7 +9,9 @@ import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import Header from "@/components/header"
 import { toast } from "sonner"
-import { CheckCircle, Upload, X, Trash2 } from "lucide-react"
+import { CheckCircle, Upload, X, Trash2, ShieldAlert, ChevronRight, ChevronLeft } from "lucide-react"
+import { useUser } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
 
 // Firebase configuration using environment variables
 const firebaseConfig = {
@@ -41,7 +43,7 @@ interface Face extends FaceData {
 }
 
 export default function TrainFacesPage() {
-  const [name, setName] = useState<string>("")
+  const [name, setName] = useState<string>("") 
   const [images, setImages] = useState<File[]>([])
   const [imageUrls, setImageUrls] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
@@ -50,9 +52,73 @@ export default function TrainFacesPage() {
   const [faces, setFaces] = useState<Face[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
+  const [hasAccess, setHasAccess] = useState<boolean>(false)
+  const [accessChecked, setAccessChecked] = useState<boolean>(false)
+  const [selectedFace, setSelectedFace] = useState<Face | null>(null)
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0)
+  const { user } = useUser()
+  const router = useRouter()
+
+  // Check if user has access to this page
+  useEffect(() => {
+    if (!user?.emailAddresses?.length) return
+    
+    const userEmail = user.emailAddresses[0].emailAddress
+    const db = getDatabase()
+    
+    // First, check if all users are allowed to train
+    const allowAllRef = ref(db, "allow-all-to-train")
+    
+    onValue(allowAllRef, (snapshot) => {
+      const allowAllValue = snapshot.val()
+      
+      if (allowAllValue === 1 || allowAllValue === "1") {
+        // If allow-all-to-train is 1, grant access to everyone
+        setHasAccess(true)
+        setAccessChecked(true)
+      } else {
+        // If not, check if the user's email is in the supreme list
+        const supremeRef = ref(db, "supreme")
+        
+        onValue(supremeRef, (snapshot) => {
+          const data = snapshot.val()
+          if (data) {
+            // Check if user's email is in the supreme list
+            const emails = Object.values(data)
+            const userHasAccess = emails.includes(userEmail)
+            setHasAccess(userHasAccess)
+            
+            // If user doesn't have access, show toast and redirect
+            if (!userHasAccess) {
+              toast.error("Access Denied", {
+                description: "You don't have permission to access this page.",
+                duration: 5000,
+              })
+              router.push("/app")
+            }
+          } else {
+            setHasAccess(false)
+            toast.error("Access Denied", {
+              description: "You don't have permission to access this page.",
+              duration: 5000,
+            })
+            router.push("/app")
+          }
+          setAccessChecked(true)
+        })
+      }
+    })
+    
+    return () => {
+      // No need to unsubscribe as Firebase handles this automatically when component unmounts
+    }
+  }, [user, router])
 
   // Fetch faces from Firebase
   useEffect(() => {
+    // Only fetch faces if user has access
+    if (!hasAccess) return
+    
     const facesRef = ref(database, "faces")
     const unsubscribe = onValue(facesRef, (snapshot) => {
       const data = snapshot.val()
@@ -69,7 +135,7 @@ export default function TrainFacesPage() {
     })
 
     return () => unsubscribe()
-  }, [])
+  }, [hasAccess])
 
   // Function to handle image selection
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
@@ -206,6 +272,9 @@ export default function TrainFacesPage() {
       setIsDeleting(faceId)
       await remove(ref(database, `faces/${faceId}`))
       toast.success("Face deleted successfully")
+      if (selectedFace?.id === faceId) {
+        setSelectedFace(null)
+      }
     } catch (error) {
       console.error("Error deleting face:", error)
       toast.error("Failed to delete face")
@@ -222,6 +291,63 @@ export default function TrainFacesPage() {
     setUploadProgress([0, 0, 0])
   }
 
+  // Function to view face details
+  const handleViewFace = (face: Face) => {
+    setSelectedFace(face)
+    setCurrentImageIndex(0)
+  }
+
+  // Function to navigate through face images
+  const navigateImages = (direction: 'next' | 'prev') => {
+    if (!selectedFace || !selectedFace.imageUrls) return
+    
+    const totalImages = selectedFace.imageUrls.length
+    if (direction === 'next') {
+      setCurrentImageIndex((prev) => (prev + 1) % totalImages)
+    } else {
+      setCurrentImageIndex((prev) => (prev - 1 + totalImages) % totalImages)
+    }
+  }
+
+  // Show loading state while checking access
+  if (!accessChecked) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-slate-600">Checking access...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // If access check is complete but user doesn't have access, show access denied
+  // This is a fallback in case the redirect doesn't happen immediately
+  if (accessChecked && !hasAccess) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <Card className="p-8 max-w-md text-center">
+            <div className="flex justify-center mb-4">
+              <ShieldAlert className="h-16 w-16 text-red-500" />
+            </div>
+            <h2 className="text-2xl font-semibold text-slate-900 mb-2">Access Denied</h2>
+            <p className="text-slate-700 mb-6">
+              You don't have permission to access this page.
+            </p>
+            <Button onClick={() => router.push("/app")}>
+              Return to Dashboard
+            </Button>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Header />
@@ -229,8 +355,106 @@ export default function TrainFacesPage() {
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <h1 className="text-3xl font-bold text-slate-900 mb-6">Train Faces</h1>
 
+        {/* Face Detail Modal */}
+        {selectedFace && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full overflow-hidden">
+              <div className="p-4 border-b border-slate-200 flex justify-between items-center">
+                <h2 className="text-xl font-semibold text-slate-900">{selectedFace.name}</h2>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setSelectedFace(null)}
+                  className="text-slate-500 hover:text-slate-700"
+                >
+                  <X size={20} />
+                </Button>
+              </div>
+              
+              <div className="relative">
+                {/* Image Gallery */}
+                <div className="aspect-video bg-slate-100 relative overflow-hidden">
+                  {selectedFace.imageUrls && selectedFace.imageUrls.length > 0 ? (
+                    <img 
+                      src={selectedFace.imageUrls[currentImageIndex]} 
+                      alt={`${selectedFace.name} - Image ${currentImageIndex + 1}`}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-slate-500">No images available</p>
+                    </div>
+                  )}
+                  
+                  {/* Image Navigation */}
+                  {selectedFace.imageUrls && selectedFace.imageUrls.length > 1 && (
+                    <>
+                      <button 
+                        onClick={() => navigateImages('prev')}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-md"
+                        aria-label="Previous image"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+                      <button 
+                        onClick={() => navigateImages('next')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 shadow-md"
+                        aria-label="Next image"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                    </>
+                  )}
+                </div>
+                
+                {/* Image Thumbnails */}
+                {selectedFace.imageUrls && selectedFace.imageUrls.length > 1 && (
+                  <div className="flex justify-center gap-2 p-4 bg-slate-50 border-t border-slate-200">
+                    {selectedFace.imageUrls.map((url, index) => (
+                      <button 
+                        key={index}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={`w-16 h-16 rounded-md overflow-hidden border-2 ${currentImageIndex === index ? 'border-blue-500' : 'border-transparent'}`}
+                      >
+                        <img 
+                          src={url} 
+                          alt={`Thumbnail ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <div className="p-4 flex justify-between">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setSelectedFace(null)}
+                >
+                  Close
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  onClick={() => handleDeleteFace(selectedFace.id)}
+                  disabled={isDeleting === selectedFace.id}
+                >
+                  {isDeleting === selectedFace.id ? (
+                    <>
+                      <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>Delete Face</>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {isSubmitted ? (
-          <Card className="p-8 text-center">
+          <Card className="p-8 text-center mb-8">
             <div className="flex justify-center mb-4">
               <CheckCircle className="h-16 w-16 text-green-500" />
             </div>
@@ -241,77 +465,71 @@ export default function TrainFacesPage() {
             <Button onClick={resetForm}>Train Another Face</Button>
           </Card>
         ) : (
-          <Card className="p-6">
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Person's Name</Label>
+          <div className="flex flex-col space-y-8">
+            {/* Add New Face Section - Now at the top */}
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold text-slate-900 mb-4">Add New Face</h2>
+              <form onSubmit={handleSubmit}>
+                <div className="mb-6">
+                  <Label htmlFor="name" className="mb-2 block">
+                    Person's Name
+                  </Label>
                   <Input
                     id="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter full name"
+                    className="w-full"
                     required
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Face Images (3 required)</Label>
-                  <p className="text-sm text-slate-500 mb-4">
-                    Upload 3 different images of the person's face for better recognition.
+                <div className="mb-6">
+                  <Label className="mb-2 block">Face Images (3 required)</Label>
+                  <p className="text-sm text-slate-600 mb-4">
+                    Upload 3 clear images of the person's face from different angles.
                   </p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     {[0, 1, 2].map((index) => (
                       <div key={index} className="relative">
-                        <div
-                          className={`border-2 border-dashed rounded-lg p-4 h-48 flex flex-col items-center justify-center cursor-pointer ${imageUrls[index] ? 'border-green-500' : 'border-slate-300 hover:border-slate-400'
-                            }`}
-                          onClick={() => document.getElementById(`image-${index}`)?.click()}
-                        >
-                          {imageUrls[index] ? (
-                            <div className="relative w-full h-full">
-                              <img
-                                src={imageUrls[index]}
-                                alt={`Face ${index + 1}`}
-                                className="w-full h-full object-cover rounded-md"
-                              />
-                              <button
-                                type="button"
-                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  removeImage(index)
-                                }}
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
+                        {imageUrls[index] ? (
+                          <div className="relative aspect-square rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
+                            <img
+                              src={imageUrls[index]}
+                              alt={`Face ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full hover:bg-red-500 transition-colors"
+                              aria-label="Remove image"
+                            >
+                              <X size={14} />
+                            </button>
+                            {uploadProgress[index] > 0 && uploadProgress[index] < 100 && (
+                              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                <div className="bg-white rounded-lg px-2 py-1 text-xs font-medium">
+                                  {uploadProgress[index]}%
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <label className="flex flex-col items-center justify-center aspect-square rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 cursor-pointer transition-colors">
+                            <div className="flex flex-col items-center justify-center p-2 text-center">
+                              <Upload className="h-5 w-5 sm:h-8 sm:w-8 text-slate-400 mb-1 sm:mb-2" />
+                              <span className="text-[10px] sm:text-xs font-medium text-slate-500">Image {index + 1}</span>
                             </div>
-                          ) : (
-                            <>
-                              <Upload className="h-10 w-10 text-slate-400 mb-2" />
-                              <p className="text-sm text-slate-500 text-center">
-                                Click to upload image {index + 1}
-                              </p>
-                            </>
-                          )}
-
-                          {isSubmitting && uploadProgress[index] > 0 && uploadProgress[index] < 100 && (
-                            <div className="absolute bottom-0 left-0 right-0 bg-slate-200 h-1">
-                              <div
-                                className="bg-green-500 h-1"
-                                style={{ width: `${uploadProgress[index]}%` }}
-                              ></div>
-                            </div>
-                          )}
-                        </div>
-                        <input
-                          id={`image-${index}`}
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleImageSelect(e, index)}
-                          className="hidden"
-                        />
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleImageSelect(e, index)}
+                              className="hidden"
+                            />
+                          </label>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -320,78 +538,83 @@ export default function TrainFacesPage() {
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || images.filter(Boolean).length < 3 || !name}
                 >
-                  {isSubmitting ? "Uploading..." : "Save Face Data"}
+                  {isSubmitting ? (
+                    <>
+                      <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Face Data"
+                  )}
                 </Button>
-              </div>
-            </form>
-          </Card>
-        )}
-
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold text-slate-900 mb-4">Trained Faces</h2>
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="p-4 h-64 animate-pulse">
-                  <div className="flex space-x-4">
-                    <div className="w-16 h-16 bg-slate-200 rounded-full"></div>
-                    <div className="flex-1 space-y-2 py-1">
-                      <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-                      <div className="h-4 bg-slate-200 rounded w-1/2"></div>
-                    </div>
-                  </div>
-                  <div className="mt-4 grid grid-cols-3 gap-2">
-                    <div className="h-24 bg-slate-200 rounded"></div>
-                    <div className="h-24 bg-slate-200 rounded"></div>
-                    <div className="h-24 bg-slate-200 rounded"></div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : faces.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {faces.map((face) => (
-                <Card key={face.id} className="p-4 overflow-hidden">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-slate-900">{face.name}</h3>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDeleteFace(face.id)}
-                      disabled={isDeleting === face.id}
-                    >
-                      {isDeleting === face.id ? (
-                        <span className="animate-pulse">Deleting...</span>
-                      ) : (
-                        <>
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {face.imageUrls.map((url, index) => (
-                      <div key={index} className="aspect-square rounded-md overflow-hidden">
-                        <img
-                          src={url}
-                          alt={`${face.name} - ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <Card className="p-6 text-center">
-              <p className="text-slate-500">No trained faces yet. Add some faces above.</p>
+              </form>
             </Card>
-          )}
-        </div>
+
+            {/* Existing Faces Section - Now below Add New Face */}
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold text-slate-900 mb-4">Existing Faces</h2>
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : faces.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">
+                  <p>No faces have been trained yet.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto pr-2">
+                  {faces.map((face) => (
+                    <div
+                      key={face.id}
+                      className="flex flex-col p-3 bg-slate-50 rounded-lg border border-slate-200"
+                    >
+                      <div className="flex items-center mb-3">
+                        {face.imageUrls && face.imageUrls.length > 0 && (
+                          <div className="h-12 w-12 rounded-full overflow-hidden border border-slate-200 mr-3">
+                            <img
+                              src={face.imageUrls[0]}
+                              alt={face.name}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="font-medium text-slate-900">{face.name}</h3>
+                          <p className="text-xs text-slate-500">{face.imageUrls?.length || 0} images</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mt-auto">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewFace(face)}
+                          className="flex-1 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                        >
+                          View
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteFace(face.id)}
+                          disabled={isDeleting === face.id}
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                          {isDeleting === face.id ? (
+                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></span>
+                          ) : (
+                            <Trash2 size={16} />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   )

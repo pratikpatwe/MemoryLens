@@ -54,7 +54,7 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold text-slate-900 mb-4">Quick Links</h3>
             <ul className="space-y-2">
-              {["Mission", "Project", "Team", "Mentor", "Contact"].map((item) => (
+              {["Mission", "Project", "Team", "Mentor"].map((item) => (
                 <li key={item}>
                   <Link
                     href={`#${item.toLowerCase()}`}
@@ -68,12 +68,12 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="font-semibold text-slate-900 mb-4">Contact</h3>
+            <h3 className="font-semibold text-slate-900 mb-4">Details</h3>
             <ul className="space-y-2 text-slate-600">
-              <li>123 Innovation Drive</li>
-              <li>San Francisco, CA 94107</li>
-              <li>info@memorylens.com</li>
-              <li>(555) 123-4567</li>
+              <li>MIT ADT University</li>
+              <li>Loni Kalbhor, Pune</li>
+              {/* <li>info@memorylens.com</li>
+              <li>(555) 123-4567</li> */}
             </ul>
           </div>
         </div>

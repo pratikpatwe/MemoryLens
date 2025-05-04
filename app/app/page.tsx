@@ -191,8 +191,8 @@ export default function AppPage() {
                 disabled={isLoading || isProcessing}
                 className={cn(
                   "px-6 py-2 transition-all duration-300",
-                  status === "1" 
-                    ? "bg-amber-600 hover:bg-amber-700 shadow-md hover:shadow-lg" 
+                  status === "1"
+                    ? "bg-amber-600 hover:bg-amber-700 shadow-md hover:shadow-lg"
                     : "bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg",
                   isProcessing && "relative overflow-hidden"
                 )}
@@ -211,7 +211,7 @@ export default function AppPage() {
                 )}
                 {isProcessing && <div className="absolute inset-0 bg-white/20 backdrop-blur-sm animate-pulse"></div>}
               </Button>
-              
+
               <Link href="/app/train-face" passHref>
                 <Button
                   variant="outline"

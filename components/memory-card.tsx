@@ -8,6 +8,7 @@ import { getDatabase, ref, onValue, remove } from "firebase/database"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+import { useUser } from "@clerk/nextjs"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,8 +76,10 @@ export default function MemoryCard({ memory, onViewDetails }: MemoryCardProps) {
   const [selectedPerson, setSelectedPerson] = useState<{ name: string, image: string, confidence: number | null } | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [hasDeleteAccess, setHasDeleteAccess] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { user } = useUser()
 
   // Parse timestamp (format: "2025-04-28_00-20-50")
   const dateParts = memory.timestamp.split("_")[0].split("-")
@@ -106,6 +109,26 @@ export default function MemoryCard({ memory, onViewDetails }: MemoryCardProps) {
   useEffect(() => {
     loadModels()
   }, [])
+
+  // Check if current user has delete access
+  useEffect(() => {
+    if (!user?.emailAddresses?.length) return
+
+    const userEmail = user.emailAddresses[0].emailAddress
+    const db = getDatabase()
+    const supremeRef = ref(db, "supreme")
+
+    const unsubscribe = onValue(supremeRef, (snapshot) => {
+      const data = snapshot.val()
+      if (data) {
+        // Check if user's email is in the supreme list
+        const emails = Object.values(data)
+        setHasDeleteAccess(emails.includes(userEmail))
+      }
+    })
+
+    return () => unsubscribe()
+  }, [user])
 
   // Fetch known faces from Firebase
   useEffect(() => {
@@ -251,10 +274,10 @@ export default function MemoryCard({ memory, onViewDetails }: MemoryCardProps) {
   // Handle memory deletion
   const handleDeleteMemory = async () => {
     if (!memory.id) return
-    
+
     setIsDeleting(true)
     const db = getDatabase()
-    
+
     try {
       // Delete the memory from Firebase
       await remove(ref(db, `images/${memory.id}`))
@@ -298,14 +321,16 @@ export default function MemoryCard({ memory, onViewDetails }: MemoryCardProps) {
             </div>
           </div>
 
-          {/* Delete button */}
-          <button
-            onClick={() => setDeleteDialogOpen(true)}
-            className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full hover:bg-red-500 transition-colors z-10"
-            aria-label="Delete memory"
-          >
-            <Trash2 size={16} />
-          </button>
+          {/* Delete button - only show if user has delete access */}
+          {hasDeleteAccess && (
+            <button
+              onClick={() => setDeleteDialogOpen(true)}
+              className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full hover:bg-red-500 transition-colors z-10"
+              aria-label="Delete memory"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
 
           {/* Show processing indicator */}
           {isProcessing && (
