@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { initializeApp } from "firebase/app"
 import { getDatabase, ref, onValue, set, push } from "firebase/database"
-import { Play, Pause, Power } from "lucide-react"
+import { Play, Pause, Brain } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { format } from "date-fns"
@@ -12,6 +12,7 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import Link from "next/link"
 
 // Firebase configuration using environment variables
 const firebaseConfig = {
@@ -44,11 +45,26 @@ interface Location {
   longitude: number
 }
 
+// Update the MemoryImage interface
 interface MemoryImage {
   id: string
   imgUrl: string
   location: Location
   timestamp: string
+  detectedFaces?: Array<{
+    detection: {
+      box: {
+        x: number
+        y: number
+        width: number
+        height: number
+      }
+      score: number
+    }
+    landmarks: Array<{ x: number, y: number }>
+    name: string | null
+    distance: number | null
+  }>
 }
 
 export default function AppPage() {
@@ -144,36 +160,6 @@ export default function AppPage() {
       })
   }
 
-  const handleShutdown = () => {
-    const now = new Date()
-    const timestamp = format(now, "yyyy-MM-dd_HH-mm-ss")
-    const formatted = format(now, "yyyy-MM-dd HH:mm:ss")
-    const unixtime = Math.floor(now.getTime() / 1000)
-
-    const shutdownData = {
-      timestamp,
-      formatted,
-      unixtime,
-      processed: false,
-    }
-
-    const shutdownRef = ref(database, "log/shutdown")
-    push(shutdownRef, shutdownData)
-      .then(() => {
-        toast.warning("Shutdown signal sent to device", {
-          description: "The device will shut down shortly.",
-          icon: <Power className="h-4 w-4" />,
-          duration: 5000,
-        })
-      })
-      .catch((error) => {
-        console.error("Error sending shutdown signal:", error)
-        toast.error("Failed to send shutdown signal", {
-          description: error.message,
-        })
-      })
-  }
-
   const handleViewDetails = (memory: MemoryImage) => {
     // This would typically navigate to a details page
     // For now, we'll just show a toast
@@ -204,31 +190,37 @@ export default function AppPage() {
                 onClick={toggleStatus}
                 disabled={isLoading || isProcessing}
                 className={cn(
-                  status === "1" ? "bg-amber-600 hover:bg-amber-700" : "",
-                  isProcessing && "relative overflow-hidden",
+                  "px-6 py-2 transition-all duration-300",
+                  status === "1" 
+                    ? "bg-amber-600 hover:bg-amber-700 shadow-md hover:shadow-lg" 
+                    : "bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg",
+                  isProcessing && "relative overflow-hidden"
                 )}
+                size="lg"
               >
                 {isLoading ? (
                   "Loading..."
                 ) : status === "1" ? (
                   <>
-                    <Pause className="mr-2 h-4 w-4" /> Stop
+                    <Pause className="mr-2 h-5 w-5" /> Stop Capturing
                   </>
                 ) : (
                   <>
-                    <Play className="mr-2 h-4 w-4" /> Start
+                    <Play className="mr-2 h-5 w-5" /> Start Capturing
                   </>
                 )}
                 {isProcessing && <div className="absolute inset-0 bg-white/20 backdrop-blur-sm animate-pulse"></div>}
               </Button>
-              <Button
-                variant="outline"
-                className="border-red-500 text-red-500 hover:bg-red-50"
-                onClick={handleShutdown}
-                disabled={isProcessing}
-              >
-                <Power className="mr-2 h-4 w-4 text-red-500" /> Off
-              </Button>
+              
+              <Link href="/app/train-face" passHref>
+                <Button
+                  variant="outline"
+                  className="border-blue-500 text-blue-600 hover:bg-blue-50 px-6 py-2 shadow-sm hover:shadow-md transition-all duration-300"
+                  size="lg"
+                >
+                  <Brain className="mr-2 h-5 w-5 text-blue-500" /> Train Faces
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

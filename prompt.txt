@@ -1,0 +1,148 @@
+so this is my Firebase Realtime Database Schema:
+
+{
+  "faces": {
+    "-OPLVXGHjG_0pPRdqlwO": {
+      "imageUrls": [
+        "https://ik.imagekit.io/hypjg0kzv/faces/face_tejas_deshpande_0_2uS2rUeLu",
+        "https://ik.imagekit.io/hypjg0kzv/faces/face_tejas_deshpande_1_pekTjH75AV",
+        "https://ik.imagekit.io/hypjg0kzv/faces/face_tejas_deshpande_2_YxP-KAR2a"
+      ],
+      "name": "Tejas Deshpande"
+    },
+    "-OPLaGO3rCWlv8l7U_jA": {
+      "imageUrls": [
+        "https://ik.imagekit.io/hypjg0kzv/faces/face_abhinav_giri_0_-xOjP9uYb",
+        "https://ik.imagekit.io/hypjg0kzv/faces/face_abhinav_giri_1_ceuXr8NfsK",
+        "https://ik.imagekit.io/hypjg0kzv/faces/face_abhinav_giri_2_Vir3DB_n9"
+      ],
+      "name": "Abhinav Giri"
+    },
+    "-OPOx19KFXdz6OvlKv89": {
+      "imageUrls": [
+        "https://ik.imagekit.io/hypjg0kzv/faces/face_pratik_patwe_0_J--z2YpNgc",
+        "https://ik.imagekit.io/hypjg0kzv/faces/face_pratik_patwe_1_wdv5NOxxR7",
+        "https://ik.imagekit.io/hypjg0kzv/faces/face_pratik_patwe_2_7MuXFda56"
+      ],
+      "name": "Pratik Patwe"
+    }
+  },
+  "images": {
+    "-OPLdf_AU3V1rYvsUbYr": {
+      "imgUrl": "https://ik.imagekit.io/hypjg0kzv/memorylens/image_2025-05-03_15-53-34_jnubTT7ZV.jpg",
+      "location": {
+        "city": "Pune",
+        "country": "India",
+        "detailed": {
+          "city": "Pune City",
+          "country": "India",
+          "display_name": "Chandrashekhar Agashe Road, Shaniwar Peth, Pune City, Pune, Maharashtra, 411030, India",
+          "state": "Maharashtra",
+          "suburb": "Shaniwar Peth"
+        },
+        "latitude": 18.5211,
+        "longitude": 73.8502
+      },
+      "timestamp": "2025-05-04_15-53-34"
+    },
+    "-OPLkqWyfrTR_ddrPWg5": {
+      "imgUrl": "https://ik.imagekit.io/hypjg0kzv/memorylens/image_2025-05-03_16-19-39_ZnwPQXjka.jpg",
+      "location": {
+        "city": "Pune",
+        "country": "India",
+        "detailed": {
+          "city": "Pune City",
+          "country": "India",
+          "display_name": "Chandrashekhar Agashe Road, Shaniwar Peth, Pune City, Pune, Maharashtra, 411030, India",
+          "state": "Maharashtra",
+          "suburb": "Shaniwar Peth"
+        },
+        "latitude": 18.5211,
+        "longitude": 73.8502
+      },
+      "timestamp": "2025-05-03_16-19-39"
+    },
+    "-OPM8-2nTXgcsyTWreY7": {
+      "imgUrl": "https://ik.imagekit.io/hypjg0kzv/memorylens/image_2025-05-03_15-21-06_XrqkkTEgJ.jpg",
+      "location": {
+        "city": "Pune",
+        "country": "India",
+        "detailed": {
+          "city": "Pune City",
+          "country": "India",
+          "display_name": "Chandrashekhar Agashe Road, Shaniwar Peth, Pune City, Pune, Maharashtra, 411030, India",
+          "state": "Maharashtra",
+          "suburb": "Shaniwar Peth"
+        },
+        "latitude": 18.5211,
+        "longitude": 73.8502
+      },
+      "timestamp": "2025-05-03_15-21-06"
+    }
+  },
+  "log": {
+    "shutdown": {
+      "-OOtqt6-zSLbsiy2yBwF": {
+        "formatted": "2025-04-28 06:15:54",
+        "processed": false,
+        "timestamp": "2025-04-28_06-15-54",
+        "unixtime": 1745801154
+      },
+      "-OOtw7nwchxMHAeuXSYf": {
+        "formatted": "2025-04-28 06:38:49",
+        "processed": false,
+        "timestamp": "2025-04-28_06-38-49",
+        "unixtime": 1745802529
+      },
+      "-OOu-D4BCfT0Whdj5-Fd": {
+        "formatted": "2025-04-28 06:56:39",
+        "processed": false,
+        "timestamp": "2025-04-28_06-56-39",
+        "unixtime": 1745803599
+      },
+      "-OOuhjlnsTboOfzbtrT0": {
+        "formatted": "2025-04-28 10:15:33",
+        "processed": false,
+        "timestamp": "2025-04-28_10-15-33",
+        "unixtime": 1745815533
+      },
+      "-OOuhkbceR_TtGt3vI9Z": {
+        "formatted": "2025-04-28 10:15:37",
+        "processed": false,
+        "timestamp": "2025-04-28_10-15-37",
+        "unixtime": 1745815537
+      },
+      "-OOuhknFsay3loJ2QVic": {
+        "formatted": "2025-04-28 10:15:38",
+        "processed": false,
+        "timestamp": "2025-04-28_10-15-38",
+        "unixtime": 1745815538
+      },
+      "-OPLKqMYA4IJf68JjpLF": {
+        "formatted": "2025-05-03 19:00:31",
+        "processed": false,
+        "timestamp": "2025-05-03_19-00-31",
+        "unixtime": 1746279031
+      },
+      "-OPMghA0VpesmDADJezX": {
+        "formatted": "2025-05-04 01:20:00",
+        "processed": false,
+        "timestamp": "2025-05-04_01-20-00",
+        "unixtime": 1746301800
+      }
+    }
+  },
+  "status": "0",
+  "system": {
+    "status": "shutdown"
+  }
+}
+
+
+in which there is a branch 'images' from which we are getting data for memory-card
+
+and there is also a branch for 'faces' where is name of the person and 3 images of face of that person
+
+so now what I want to use face-api.js to detect faces from images (images we are showing in memory-card) we will just detect faces (for detecting faces data is available in 'faces' branch with name of person) we simply have to process the image and store the data back in database for that image in 'detectedFaces' (we only have to process image if data for 'detectedFaces' is not available for that image)
+
+and show the detected faces in card in good way 
