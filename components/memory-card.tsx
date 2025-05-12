@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { MapPin, Calendar, Clock, User, X, Trash2 } from "lucide-react"
+import { MapPin, Calendar, Clock, User, X, Trash2, ShieldAlert } from "lucide-react"
 import { loadModels, detectFaces, saveDetectedFaces } from "@/lib/faceDetectionService"
 import { getDatabase, ref, onValue, remove } from "firebase/database"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
@@ -77,6 +77,7 @@ export default function MemoryCard({ memory, onViewDetails }: MemoryCardProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [hasDeleteAccess, setHasDeleteAccess] = useState(false)
+  const [faceDetectionSkipped, setFaceDetectionSkipped] = useState(false)
   const imgRef = useRef<HTMLImageElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { user } = useUser()
@@ -158,29 +159,50 @@ export default function MemoryCard({ memory, onViewDetails }: MemoryCardProps) {
   useEffect(() => {
     const processImage = async () => {
       // Skip if already processed or currently processing
-      if (memory.detectedFaces || isProcessing) return
+      if (memory.detectedFaces || isProcessing) return;
 
-      setIsProcessing(true)
+      setIsProcessing(true);
+
+      // Add a timeout to prevent infinite processing
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error("Face detection timeout")), 10000); // 10 second timeout
+      });
 
       try {
-        const result = await detectFaces(memory.imgUrl, knownFaces)
+        // Race between face detection and timeout
+        const result = await Promise.race([
+          detectFaces(memory.imgUrl, knownFaces),
+          timeoutPromise
+        ]) as FaceDetectionResult;
 
         if (result.detectedFaces) {
-          setFaces(result.detectedFaces)
-          await saveDetectedFaces(memory.id, result.detectedFaces)
+          setFaces(result.detectedFaces);
+          await saveDetectedFaces(memory.id, result.detectedFaces);
         }
       } catch (error) {
-        console.error("Error processing image:", error)
+        console.error("Error processing image:", error);
+        setFaceDetectionSkipped(true);
+        // Save empty faces array to prevent future processing attempts
+        await saveDetectedFaces(memory.id, []);
+        toast.error("Face detection failed", {
+          description: "Could not detect faces in this image."
+        });
       } finally {
-        setIsProcessing(false)
+        setIsProcessing(false);
       }
-    }
+    };
 
-    // Only process if we have known faces to compare against
-    if (Object.keys(knownFaces).length > 0) {
-      processImage()
+    // Only process if we have known faces to compare against and a maximum of 3 retries
+    const retryCount = parseInt(localStorage.getItem(`retry-${memory.id}`) || "0");
+    if (Object.keys(knownFaces).length > 0 && retryCount < 3) {
+      processImage();
+      localStorage.setItem(`retry-${memory.id}`, (retryCount + 1).toString());
+    } else if (retryCount >= 3 && !memory.detectedFaces) {
+      // If we've tried 3 times and still no faces, save empty array to prevent future attempts
+      saveDetectedFaces(memory.id, []);
+      setIsProcessing(false);
     }
-  }, [memory, knownFaces, isProcessing])
+  }, [memory, knownFaces, isProcessing]);
 
   // Draw face boxes on the image when faces are detected
   useEffect(() => {
@@ -344,6 +366,25 @@ export default function MemoryCard({ memory, onViewDetails }: MemoryCardProps) {
         </div>
 
         <CardContent className="p-3 sm:p-4 md:p-5 flex-grow space-y-3 sm:space-y-4 md:space-y-5">
+          {faceDetectionSkipped && (
+            <div className="text-amber-600 text-xs mt-1 flex items-center gap-2">
+              <ShieldAlert className="h-3 w-3" />
+              <span>Face detection skipped</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setFaceDetectionSkipped(false);
+                  localStorage.removeItem(`retry-${memory.id}`);
+                  setFaces([]);
+                  setIsProcessing(false);
+                }}
+                className="text-xs ml-2"
+              >
+                Retry Detection
+              </Button>
+            </div>
+          )}
           {/* Detected faces with improved badge style */}
           {((memory.detectedFaces && memory.detectedFaces.length > 0) || faces.length > 0) && (
             <div>
@@ -497,4 +538,9 @@ export default function MemoryCard({ memory, onViewDetails }: MemoryCardProps) {
       </AlertDialog>
     </>
   )
+}
+
+interface FaceDetectionResult {
+  detectedFaces: DetectedFace[]
+  error?: string
 }
