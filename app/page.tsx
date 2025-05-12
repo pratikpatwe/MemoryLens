@@ -30,7 +30,7 @@ export default function Home() {
             </div>
             <div className="flex-1">
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-                <img src="/placeholder.svg?height=400&width=500" alt="MemoryLens Device" className="w-full h-auto" />
+                <img src="https://plus.unsplash.com/premium_photo-1681914500251-b91a6c53abff?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="MemoryLens Device" className="w-full h-auto" />
                 <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/40 to-transparent"></div>
               </div>
             </div>
@@ -50,7 +50,7 @@ export default function Home() {
               <div className="flex-1 relative overflow-hidden rounded-xl">
                 <div className="absolute inset-0 bg-gradient-to-tr from-slate-700/20 to-transparent z-10"></div>
                 <img
-                  src="/placeholder.svg?height=300&width=400"
+                  src="https://images.unsplash.com/photo-1497942304796-b8bc2cc898f3?q=80&w=1738&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   alt="Our Mission"
                   className="rounded-xl w-full h-auto"
                 />
@@ -127,7 +127,7 @@ export default function Home() {
               <div className="relative rounded-2xl overflow-hidden shadow-xl">
                 <div className="absolute inset-0 bg-gradient-to-tr from-slate-700/20 to-transparent z-10"></div>
                 <img
-                  src="/placeholder.svg?height=500&width=600"
+                  src="https://sdmntprwestus2.oaiusercontent.com/files/00000000-ec58-61f8-9881-b4f58277e461/raw?se=2025-05-12T06%3A11%3A08Z&sp=r&sv=2024-08-04&sr=b&scid=00000000-0000-0000-0000-000000000000&skoid=30ec2761-8f41-44db-b282-7a0f8809659b&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-05-11T21%3A30%3A35Z&ske=2025-05-12T21%3A30%3A35Z&sks=b&skv=2024-08-04&sig=IAnXPjDJ5l7JeOz6Xb%2BNqxMR5zDjFWUaxErfxla%2B6HQ%3D"
                   alt="MemoryLens Device and App"
                   className="w-full h-auto"
                 />
@@ -150,7 +150,7 @@ export default function Home() {
             <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
               <div className="absolute inset-0 bg-gradient-to-tr from-slate-700/20 to-transparent z-10"></div>
               <img
-                src="/placeholder.svg?height=720&width=1280"
+                src="https://ik.imagekit.io/hypjg0kzv/photo_2025-05-08_14-11-46.jpg?updatedAt=1747026426903"
                 alt="MemoryLens Team"
                 className="absolute inset-0 w-full h-full object-cover rounded-xl shadow-lg"
               />
@@ -158,7 +158,7 @@ export default function Home() {
           </div>
 
           {/* Team Members */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+          {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
             {[
               { name: "Pratik Patwe", role: "FY SOC09, MIT ADT", image: "/placeholder.svg?height=300&width=300" },
               { name: "Riya Patil", role: "FY SOC09, MIT ADT", image: "/placeholder.svg?height=300&width=300" },
@@ -181,7 +181,7 @@ export default function Home() {
                 </div>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
       </section>
 

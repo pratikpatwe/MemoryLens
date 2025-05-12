@@ -111,7 +111,11 @@ export default function AppPage() {
         }))
         // Sort by timestamp (newest first)
         memoriesArray.sort((a, b) => {
-          return b.timestamp.localeCompare(a.timestamp)
+          // Add null checks before using localeCompare
+          if (!a.timestamp && !b.timestamp) return 0;
+          if (!a.timestamp) return 1; // b comes first if a has no timestamp
+          if (!b.timestamp) return -1; // a comes first if b has no timestamp
+          return b.timestamp.localeCompare(a.timestamp);
         })
         setMemories(memoriesArray)
       } else {
