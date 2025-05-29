@@ -75,7 +75,7 @@ export default function AudioPlayer({ className }: AudioPlayerProps) {
 
           {/* Song info */}
           <div className="flex-grow min-w-0 mr-3 sm:mr-4">
-            <p className="text-xs sm:text-sm font-medium text-red-200 mb-0.5 sm:mb-1">29/05/2025</p>
+            <p className="text-xs sm:text-sm font-medium text-red-200 mb-0.5 sm:mb-1">29/05/2025 | Last Update ; )</p>
             <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-0.5 sm:mb-1 truncate">Memories</h1>
             <p className="text-sm sm:text-base md:text-lg text-red-200 truncate">Maroon 5</p>
           </div>

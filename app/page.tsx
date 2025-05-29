@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
+import Link from "next/link"
 
 export default function Home() {
   return (
@@ -20,9 +21,11 @@ export default function Home() {
                 memory-related challenges stay connected to their experiences.
               </p>
               <div className="flex flex-wrap gap-4 pt-4">
-                <Button size="lg" className="bg-slate-800 hover:bg-slate-900 text-white">
-                  Get Started
-                </Button>
+                <Link href="/app">
+                  <Button size="lg" className="bg-slate-800 hover:bg-slate-900 text-white">
+                    Get Started
+                  </Button>
+                </Link>
                 <Button size="lg" variant="outline" className="border-slate-200 text-slate-700 hover:bg-slate-50">
                   Learn More
                 </Button>
@@ -127,7 +130,7 @@ export default function Home() {
               <div className="relative rounded-2xl overflow-hidden shadow-xl">
                 <div className="absolute inset-0 bg-gradient-to-tr from-slate-700/20 to-transparent z-10"></div>
                 <img
-                  src="https://sdmntprwestus2.oaiusercontent.com/files/00000000-ec58-61f8-9881-b4f58277e461/raw?se=2025-05-12T06%3A11%3A08Z&sp=r&sv=2024-08-04&sr=b&scid=00000000-0000-0000-0000-000000000000&skoid=30ec2761-8f41-44db-b282-7a0f8809659b&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-05-11T21%3A30%3A35Z&ske=2025-05-12T21%3A30%3A35Z&sks=b&skv=2024-08-04&sig=IAnXPjDJ5l7JeOz6Xb%2BNqxMR5zDjFWUaxErfxla%2B6HQ%3D"
+                  src="project.jpg"
                   alt="MemoryLens Device and App"
                   className="w-full h-auto"
                 />
